@@ -2,6 +2,7 @@ import { Interaction, ChatInputCommandInteraction, ButtonInteraction, MessageFla
 import * as ghostping from "../commands/ghostping.js";
 import * as traceinvite from "../commands/traceinvite.js";
 import * as resetinvites from "../commands/resetinvites.js";
+import * as resetall from "../commands/resetall.js";
 import * as stats from "../commands/stats.js";
 import * as statdetail from "../commands/statdetail.js";
 import * as dmall from "../commands/dmall.js";
@@ -18,6 +19,7 @@ const commands: Record<
   ghostping,
   traceinvite,
   resetinvites,
+  resetall,
   stats,
   statdetail,
   dmall,

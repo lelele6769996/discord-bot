@@ -1,5 +1,5 @@
 import { GuildMember, TextChannel, Invite } from "discord.js";
-import { getSetting, recordJoin } from "../database.js";
+import { getSetting, recordJoin, getInviterOf } from "../database.js";
 
 const cachedInvites = new Map<string, Map<string, Invite>>();
 
@@ -56,6 +56,20 @@ export async function handleGuildMemberAdd(member: GuildMember) {
     try {
       const ch = guild.channels.cache.get(traceChanId) as TextChannel | undefined;
       if (ch) {
+        // If live invite detection failed, try to resolve the inviter from the DB
+        if (!inviterId) {
+          const storedInviterId = getInviterOf(guild.id, member.id);
+          if (storedInviterId) {
+            inviterId = storedInviterId;
+            try {
+              const inviterUser = await guild.client.users.fetch(storedInviterId);
+              inviterTag = inviterUser.username;
+            } catch {
+              inviterTag = `Utilisateur inconnu (${storedInviterId})`;
+            }
+          }
+        }
+
         const inviterMention = inviterId ? `<@${inviterId}>` : `**${inviterTag}**`;
         await ch.send(
           `📥 **${member.user.username}** a rejoint **${guild.name}**, invité par ${inviterMention} qui a maintenant **${inviterUses}** invitation${inviterUses !== 1 ? "s" : ""}.`
