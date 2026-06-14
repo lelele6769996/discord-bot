@@ -154,6 +154,23 @@ export function resetInvites(guildId: string, userId: string): void {
   ).run(guildId, userId, stats.active);
 }
 
+export function resetAllInvites(guildId: string): number {
+  const inviters = db
+    .prepare(
+      "SELECT DISTINCT inviter_id FROM invite_tracking WHERE guild_id = ? AND inviter_id IS NOT NULL"
+    )
+    .all(guildId) as { inviter_id: string }[];
+
+  for (const { inviter_id } of inviters) {
+    const stats = getInviteStats(guildId, inviter_id);
+    db.prepare(
+      "INSERT OR REPLACE INTO invite_resets (guild_id, user_id, reset_count) VALUES (?, ?, ?)"
+    ).run(guildId, inviter_id, stats.active);
+  }
+
+  return inviters.length;
+}
+
 export function saveBackup(guildId: string, name: string, data: object): void {
   db.prepare(
     "INSERT INTO backups (guild_id, name, data, created_at) VALUES (?, ?, ?, ?)"
